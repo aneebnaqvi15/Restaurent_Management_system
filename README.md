@@ -118,7 +118,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
  👥 Authors
 
-- Your Name - *Initial work* - [YourGithub](https://github.com/aneeb15)
+- Syed Aneeb Naqvi
+-
+-   - [YourGithub](https://github.com/aneeb15)
 
  🙏 Acknowledgments
 
