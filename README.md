@@ -119,14 +119,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
  👥 Authors
 
 - Syed Aneeb Naqvi
--
--   - [YourGithub](https://github.com/aneeb15)
+- (https://github.com/aneeb15)
 
- 🙏 Acknowledgments
-
-- Hat tip to anyone whose code was used
-- Inspiration
-- etc
 
  📞 Support
 
