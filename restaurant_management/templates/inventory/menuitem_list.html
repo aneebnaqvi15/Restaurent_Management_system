@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Menu Items</h1>
+        <a href="{% url 'inventory:add_menu_item' %}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150">
+            <i class="fas fa-plus mr-2"></i>Add New Item
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for item in menu_items %}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="aspect-w-16 aspect-h-9">
+                {% if item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="object-cover">
+                {% else %}
+                <div class="flex items-center justify-center bg-gray-100 h-full">
+                    <i class="fas fa-utensils text-4xl text-gray-400"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="p-4">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-lg font-medium text-gray-900">{{ item.name }}</h3>
+                    <span class="text-sm font-semibold text-indigo-600">${{ item.price }}</span>
+                </div>
+                <p class="text-sm text-gray-500 mb-4">{{ item.description|truncatechars:100 }}</p>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium {% if item.is_available %}text-green-600{% else %}text-red-600{% endif %}">
+                        {% if item.is_available %}Available{% else %}Unavailable{% endif %}
+                    </span>
+                    <div class="flex space-x-2">
+                        <a href="{% url 'inventory:edit_menu_item' item.pk %}" class="text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'inventory:delete_menu_item' item.pk %}" class="text-red-400 hover:text-red-500">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <i class="fas fa-utensils text-4xl text-gray-400 mb-4"></i>
+            <p class="text-gray-500">No menu items found</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="flex justify-center mt-8">
+        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                <span class="sr-only">Previous</span>
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-indigo-50 text-sm font-medium text-indigo-600">
+                {{ num }}
+            </span>
+            {% else %}
+            <a href="?page={{ num }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                {{ num }}
+            </a>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                <span class="sr-only">Next</span>
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

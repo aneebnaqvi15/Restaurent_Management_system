@@ -1,0 +1,385 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Content - Sales Analytics -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Today's Sales -->
+            <div class="bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 backdrop-blur-sm bg-opacity-95 p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <h2 class="text-xl font-semibold text-gray-900">Today's Sales</h2>
+                    <div class="flex space-x-2">
+                        <button class="px-3 py-1.5 sm:px-4 sm:py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+                <div id="realtimeChart" class="w-full h-[250px] sm:h-[300px]"></div>
+            </div>
+
+            <!-- Weekly Overview -->
+            <div class="bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 backdrop-blur-sm bg-opacity-95 p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <h2 class="text-xl font-semibold text-gray-900">Weekly Overview</h2>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="px-3 py-1.5 sm:px-4 sm:py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                        <button class="px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors">
+                            <i class="fas fa-filter mr-2"></i>Filter
+                        </button>
+                    </div>
+                </div>
+                <div id="salesChart" class="w-full h-[300px] sm:h-[400px]"></div>
+            </div>
+
+            <!-- Data Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <!-- Top Selling Items -->
+                <div class="bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 backdrop-blur-sm bg-opacity-95 p-4 sm:p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Selling Items</h3>
+                    <div class="space-y-4">
+                        {% if top_items %}
+                            {% for item in top_items %}
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="w-2 h-2 bg-indigo-{% widthratio forloop.counter 5 5 %}00 rounded-full mr-2"></div>
+                                    <span class="text-sm sm:text-base">{{ item.menu_item__name }}</span>
+                                </div>
+                                <span class="font-medium text-sm sm:text-base">{{ item.total_orders }} orders</span>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center text-gray-500 py-4">
+                                <i class="fas fa-box-open mb-2 text-4xl"></i>
+                                <p>No orders yet</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Revenue by Category -->
+                <div class="bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 backdrop-blur-sm bg-opacity-95 p-4 sm:p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Revenue by Category</h3>
+                    <div class="space-y-4">
+                        {% if category_revenue %}
+                            {% for category in category_revenue %}
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="w-2 h-2 bg-green-{% widthratio forloop.counter 5 5 %}00 rounded-full mr-2"></div>
+                                    <span class="text-sm sm:text-base">{{ category.menu_item__category__name|default:"Uncategorized" }}</span>
+                                </div>
+                                <span class="font-medium text-sm sm:text-base">${{ category.total_revenue|floatformat:2 }}</span>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center text-gray-500 py-4">
+                                <i class="fas fa-chart-pie mb-2 text-4xl"></i>
+                                <p>No revenue data yet</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar - Performance Metrics -->
+        <div class="lg:col-span-1">
+            <div class="bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300 backdrop-blur-sm bg-opacity-95 p-4 sm:p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">Performance Metrics</h2>
+                <div class="space-y-6">
+                    <!-- Average Order Value -->
+                    <div class="bg-indigo-50 rounded-lg p-4 transition-all duration-300 hover:shadow-md">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-gray-600 text-sm sm:text-base">Average Order Value</span>
+                            <span class="text-base sm:text-lg font-semibold text-indigo-600">${{ avg_order_value|floatformat:2 }}</span>
+                        </div>
+                        <div class="relative w-full bg-indigo-200 rounded-full h-2.5">
+                            <div class="absolute top-0 left-0 h-full bg-indigo-600 rounded-full transition-all duration-300" 
+                                 style="width: min(100%, {% widthratio avg_order_value 100 100 %}%)"></div>
+                        </div>
+                    </div>
+
+                    <!-- Table Metrics -->
+                    <div class="bg-green-50 rounded-lg p-4 transition-all duration-300 hover:shadow-md">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-gray-600 text-sm sm:text-base">Table Utilization</span>
+                            <span class="text-base sm:text-lg font-semibold text-green-600">
+                                {{ table_metrics.occupied_tables }}/{{ table_metrics.total_tables }}
+                            </span>
+                        </div>
+                        <div class="relative w-full bg-green-200 rounded-full h-2.5">
+                            <div class="absolute top-0 left-0 h-full bg-green-600 rounded-full transition-all duration-300" 
+                                 style="width: min(100%, {% widthratio table_metrics.occupied_tables table_metrics.total_tables 100 %}%)"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Reports -->
+                <div class="mt-8">
+                    <h3 class="font-medium text-gray-900 mb-4">Quick Reports</h3>
+                    <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                        <div class="p-3 sm:p-4 bg-gray-50 rounded-lg text-center transition-all duration-300 hover:shadow-md hover:bg-gray-100">
+                            <i class="fas fa-file-invoice-dollar text-xl sm:text-2xl mb-2 text-indigo-600"></i>
+                            <div class="text-xs sm:text-sm font-medium">${{ total_revenue|floatformat:0 }}</div>
+                            <div class="text-xs text-gray-500">Total Revenue</div>
+                        </div>
+                        <div class="p-3 sm:p-4 bg-gray-50 rounded-lg text-center transition-all duration-300 hover:shadow-md hover:bg-gray-100">
+                            <i class="fas fa-shopping-cart text-xl sm:text-2xl mb-2 text-green-600"></i>
+                            <div class="text-xs sm:text-sm font-medium">{{ total_orders }}</div>
+                            <div class="text-xs text-gray-500">Total Orders</div>
+                        </div>
+                        <div class="p-3 sm:p-4 bg-gray-50 rounded-lg text-center transition-all duration-300 hover:shadow-md hover:bg-gray-100">
+                            <i class="fas fa-calendar text-xl sm:text-2xl mb-2 text-yellow-600"></i>
+                            <div class="text-xs sm:text-sm font-medium">{{ table_metrics.reservations_today }}</div>
+                            <div class="text-xs text-gray-500">Today's Reservations</div>
+                        </div>
+                        <div class="p-3 sm:p-4 bg-gray-50 rounded-lg text-center transition-all duration-300 hover:shadow-md hover:bg-gray-100">
+                            <i class="fas fa-chair text-xl sm:text-2xl mb-2 text-blue-600"></i>
+                            <div class="text-xs sm:text-sm font-medium">{{ table_metrics.total_tables }}</div>
+                            <div class="text-xs text-gray-500">Total Tables</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize charts
+    const salesChart = echarts.init(document.getElementById('salesChart'));
+    const realtimeChart = echarts.init(document.getElementById('realtimeChart'));
+
+    // Weekly sales chart
+    const weeklyOption = {
+        animation: true,
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            }
+        },
+        legend: {
+            data: ['Revenue', 'Orders'],
+            textStyle: {
+                fontSize: window.innerWidth < 640 ? 10 : 12
+            }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: {{ dates|safe }},
+            axisLabel: {
+                fontSize: window.innerWidth < 640 ? 10 : 12
+            }
+        },
+        yAxis: [
+            {
+                type: 'value',
+                name: 'Revenue ($)',
+                position: 'left',
+                axisLabel: {
+                    formatter: '${value}',
+                    fontSize: window.innerWidth < 640 ? 10 : 12
+                }
+            },
+            {
+                type: 'value',
+                name: 'Orders',
+                position: 'right',
+                axisLabel: {
+                    fontSize: window.innerWidth < 640 ? 10 : 12
+                }
+            }
+        ],
+        series: [
+            {
+                name: 'Revenue',
+                type: 'line',
+                yAxisIndex: 0,
+                data: {{ revenue_data|safe }},
+                smooth: true,
+                lineStyle: {
+                    color: '#4F46E5',
+                    width: window.innerWidth < 640 ? 2 : 3
+                },
+                itemStyle: {
+                    color: '#4F46E5'
+                },
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: 'rgba(79, 70, 229, 0.3)' },
+                        { offset: 1, color: 'rgba(79, 70, 229, 0.1)' }
+                    ])
+                }
+            },
+            {
+                name: 'Orders',
+                type: 'line',
+                yAxisIndex: 1,
+                data: {{ orders_data|safe }},
+                smooth: true,
+                lineStyle: {
+                    color: '#10B981',
+                    width: window.innerWidth < 640 ? 2 : 3
+                },
+                itemStyle: {
+                    color: '#10B981'
+                },
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: 'rgba(16, 185, 129, 0.3)' },
+                        { offset: 1, color: 'rgba(16, 185, 129, 0.1)' }
+                    ])
+                }
+            }
+        ]
+    };
+    salesChart.setOption(weeklyOption);
+
+    // Real-time sales chart
+    const realtimeOption = {
+        animation: true,
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    backgroundColor: '#6a7985'
+                }
+            }
+        },
+        legend: {
+            data: ['Revenue', 'Orders'],
+            textStyle: {
+                fontSize: window.innerWidth < 640 ? 10 : 12
+            }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: {{ hours|safe }},
+            axisLabel: {
+                interval: window.innerWidth < 640 ? 3 : 2,
+                fontSize: window.innerWidth < 640 ? 10 : 12
+            }
+        },
+        yAxis: [
+            {
+                type: 'value',
+                name: 'Revenue ($)',
+                position: 'left',
+                axisLabel: {
+                    formatter: '${value}',
+                    fontSize: window.innerWidth < 640 ? 10 : 12
+                }
+            },
+            {
+                type: 'value',
+                name: 'Orders',
+                position: 'right',
+                axisLabel: {
+                    fontSize: window.innerWidth < 640 ? 10 : 12
+                }
+            }
+        ],
+        series: [
+            {
+                name: 'Revenue',
+                type: 'line',
+                yAxisIndex: 0,
+                data: {{ hourly_revenue|safe }},
+                smooth: true,
+                symbol: 'none',
+                lineStyle: {
+                    color: '#4F46E5',
+                    width: window.innerWidth < 640 ? 2 : 3
+                },
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: 'rgba(79, 70, 229, 0.5)' },
+                        { offset: 1, color: 'rgba(79, 70, 229, 0.1)' }
+                    ])
+                },
+                emphasis: {
+                    focus: 'series'
+                }
+            },
+            {
+                name: 'Orders',
+                type: 'bar',
+                yAxisIndex: 1,
+                data: {{ hourly_orders|safe }},
+                barWidth: window.innerWidth < 640 ? '40%' : '60%',
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#10B981' },
+                        { offset: 1, color: '#059669' }
+                    ])
+                },
+                emphasis: {
+                    focus: 'series'
+                }
+            }
+        ]
+    };
+    realtimeChart.setOption(realtimeOption);
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        salesChart.resize();
+        realtimeChart.resize();
+        
+        // Update font sizes and other responsive properties
+        weeklyOption.legend.textStyle.fontSize = window.innerWidth < 640 ? 10 : 12;
+        weeklyOption.xAxis.axisLabel.fontSize = window.innerWidth < 640 ? 10 : 12;
+        weeklyOption.yAxis[0].axisLabel.fontSize = window.innerWidth < 640 ? 10 : 12;
+        weeklyOption.yAxis[1].axisLabel.fontSize = window.innerWidth < 640 ? 10 : 12;
+        weeklyOption.series[0].lineStyle.width = window.innerWidth < 640 ? 2 : 3;
+        weeklyOption.series[1].lineStyle.width = window.innerWidth < 640 ? 2 : 3;
+        salesChart.setOption(weeklyOption);
+
+        realtimeOption.legend.textStyle.fontSize = window.innerWidth < 640 ? 10 : 12;
+        realtimeOption.xAxis.axisLabel.fontSize = window.innerWidth < 640 ? 10 : 12;
+        realtimeOption.xAxis.axisLabel.interval = window.innerWidth < 640 ? 3 : 2;
+        realtimeOption.yAxis[0].axisLabel.fontSize = window.innerWidth < 640 ? 10 : 12;
+        realtimeOption.yAxis[1].axisLabel.fontSize = window.innerWidth < 640 ? 10 : 12;
+        realtimeOption.series[0].lineStyle.width = window.innerWidth < 640 ? 2 : 3;
+        realtimeOption.series[1].barWidth = window.innerWidth < 640 ? '40%' : '60%';
+        realtimeChart.setOption(realtimeOption);
+    });
+
+    // Auto-update real-time chart every minute
+    setInterval(function() {
+        fetch('{% url "dashboard:sales-data" %}')
+            .then(response => response.json())
+            .then(data => {
+                realtimeOption.xAxis.data = data.hours;
+                realtimeOption.series[0].data = data.hourly_revenue;
+                realtimeOption.series[1].data = data.hourly_orders;
+                realtimeChart.setOption(realtimeOption);
+            });
+    }, 60000);
+</script>
+{% endblock %}

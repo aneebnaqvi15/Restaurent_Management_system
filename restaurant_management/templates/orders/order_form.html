@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-6">
+                {% if form.instance.pk %}
+                Update Order #{{ form.instance.order_number }}
+                {% else %}
+                Create New Order
+                {% endif %}
+            </h2>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                <div class="space-y-1">
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ field.label }}
+                    </label>
+                    <div class="mt-1">
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="text-red-500 text-sm mt-1">
+                            {{ field.errors|join:", " }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if field.help_text %}
+                    <p class="mt-2 text-sm text-gray-500">{{ field.help_text }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                {% if not form.instance.pk %}
+                <!-- Order Items Section (Only for new orders) -->
+                <div class="mt-8">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Order Items</h3>
+                    <div id="order-items" class="space-y-4">
+                        <div class="order-item grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Menu Item</label>
+                                <select name="menu_items[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    {% for item in menu_items %}
+                                    <option value="{{ item.id }}" data-price="{{ item.price }}">{{ item.name }} - ${{ item.price }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Quantity</label>
+                                <input type="number" name="quantities[]" value="1" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                            <div class="flex items-end">
+                                <button type="button" class="remove-item text-red-600 hover:text-red-800">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" id="add-item" class="mt-4 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <i class="fas fa-plus mr-2"></i>
+                        Add Item
+                    </button>
+                </div>
+                {% endif %}
+
+                <div class="flex justify-end space-x-3 pt-6">
+                    <a href="{% url 'orders:order-list' %}" class="inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Cancel
+                    </a>
+                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        {% if form.instance.pk %}Update{% else %}Create{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const orderItems = document.getElementById('order-items');
+    const addItemBtn = document.getElementById('add-item');
+
+    if (addItemBtn) {
+        addItemBtn.addEventListener('click', function() {
+            const template = orderItems.children[0].cloneNode(true);
+            template.querySelector('input[type="number"]').value = "1";
+            orderItems.appendChild(template);
+
+            // Add event listener to new remove button
+            const removeBtn = template.querySelector('.remove-item');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', function() {
+                    if (orderItems.children.length > 1) {
+                        template.remove();
+                    }
+                });
+            }
+        });
+
+        // Add event listeners to initial remove buttons
+        document.querySelectorAll('.remove-item').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (orderItems.children.length > 1) {
+                    btn.closest('.order-item').remove();
+                }
+            });
+        });
+    }
+});
+</script>
+
+<style>
+    /* Style form inputs */
+    form input[type="text"],
+    form input[type="number"],
+    form select,
+    form textarea {
+        @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm;
+    }
+</style>
+{% endblock %}

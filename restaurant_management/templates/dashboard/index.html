@@ -1,0 +1,70 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+<div class="min-h-screen flex flex-col bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 relative">
+    <!-- Background Effects -->
+    <div class="absolute inset-0 bg-[url('https://ai-public.creatie.ai/gen_page/subtle-food-pattern.png')] opacity-5 pointer-events-none"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-pink-500/5 pointer-events-none"></div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- Active Orders Card -->
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 overflow-hidden shadow-lg rounded-lg transform hover:scale-105 transition-all duration-300 animate-fade-in cursor-pointer hover:shadow-blue-400/50 hover:shadow-xl hover:animate-[thunder_1.5s_ease-in-out]">
+            <!-- Card content same as provided -->
+        </div>
+        <!-- Additional stat cards with different gradients -->
+    </div>
+
+    <!-- Charts and Tables Section -->
+    <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Active Orders Panel -->
+        <div class="bg-white shadow-lg rounded-lg hover:shadow-xl transition-all duration-300 backdrop-blur-sm bg-opacity-95 animate-scale-in cursor-pointer hover:translate-y-[-5px]">
+            <!-- Orders list content -->
+        </div>
+
+        <!-- Sales Chart -->
+        <div class="bg-white shadow-lg rounded-lg hover:shadow-xl transition-all duration-300 backdrop-blur-sm bg-opacity-95 animate-scale-in cursor-pointer hover:translate-y-[-5px]" id="salesChart">
+            <!-- Chart content -->
+        </div>
+    </div>
+
+    <!-- Table Status Section -->
+    <div class="mt-8 bg-white shadow-lg rounded-lg hover:shadow-xl transition-all duration-300 backdrop-blur-sm bg-opacity-95 animate-scale-in cursor-pointer hover:translate-y-[-5px]">
+        <!-- Table status grid -->
+    </div>
+</div>
+
+<!-- Cursor Effects -->
+<div id="cursor-dot" class="fixed w-4 h-4 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 rounded-full pointer-events-none z-50 transition-transform duration-100 ease-out mix-blend-screen blur-sm animate-pulse"></div>
+<div id="cursor-trail" class="fixed w-12 h-12 rounded-full pointer-events-none z-40 mix-blend-screen opacity-50 transition-all duration-200 ease-out"></div>
+
+<!-- Animations and Styles -->
+<style>
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes thunder { 0% { transform: scale(1); } 50% { transform: scale(1.02) rotate(1deg); } 100% { transform: scale(1) rotate(0); } }
+    .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+    .animate-slide-in { animation: slideIn 1s ease-out forwards; }
+</style>
+
+<script>
+    // Initialize sales chart with the provided configuration
+    const salesChart = echarts.init(document.getElementById('salesChart'));
+    const option = {
+        // Your existing chart configuration
+    };
+    salesChart.setOption(option);
+
+    // Cursor effect
+    document.addEventListener('mousemove', (e) => {
+        const dot = document.getElementById('cursor-dot');
+        const trail = document.getElementById('cursor-trail');
+        if (dot && trail) {
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+            trail.style.left = e.clientX + 'px';
+            trail.style.top = e.clientY + 'px';
+        }
+    });
+</script>
+{% endblock %}

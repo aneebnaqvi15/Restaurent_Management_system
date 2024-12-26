@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Management System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Logo animation */
+        .logo-spin {
+            transition: transform 0.5s ease-in-out;
+        }
+        .logo-spin:hover {
+            transform: rotate(360deg);
+        }
+        
+        /* Nav link animations */
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            background: #4f46e5;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        /* Button hover effects */
+        .btn-hover-effect {
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+        .btn-hover-effect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Active link effect */
+        .active-nav-link {
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 5px #4f46e5, 0 0 10px #4f46e5, 0 0 15px #4f46e5;
+            }
+            to {
+                box-shadow: 0 0 10px #4f46e5, 0 0 20px #4f46e5, 0 0 30px #4f46e5;
+            }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Logo Section -->
+                <div class="flex-shrink-0 flex items-center pl-2">
+                    <img class="h-14 w-14 rounded-full object-cover shadow-lg ring-2 ring-gray-200 logo-spin" 
+                         src="https://img.freepik.com/free-vector/detailed-chef-logo-template_23-2148986823.jpg" 
+                         alt="RMS Logo" 
+                         onerror="this.src='https://via.placeholder.com/64?text=RMS'"/>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="flex flex-1 justify-center">
+                    {% if user.is_authenticated and user.is_staff %}
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8 items-center justify-center flex-grow bg-white/10 rounded-full px-4 py-2 backdrop-blur-sm">
+                        <a href="{% url 'dashboard:dashboard' %}" 
+                           class="nav-link text-gray-900 hover:bg-white/20 hover:text-indigo-600 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 {% if request.resolver_match.url_name == 'dashboard' %}active-nav-link bg-indigo-50 text-indigo-700{% endif %}">
+                           Dashboard
+                        </a>
+                        <a href="{% url 'orders:order-list' %}" 
+                           class="nav-link text-gray-900 hover:bg-white/20 hover:text-indigo-600 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 {% if request.resolver_match.namespace == 'orders' %}active-nav-link bg-indigo-50 text-indigo-700{% endif %}">
+                           Orders
+                        </a>
+                        <a href="{% url 'tables:table-list' %}" 
+                           class="nav-link text-gray-900 hover:bg-white/20 hover:text-indigo-600 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 {% if request.resolver_match.namespace == 'tables' %}active-nav-link bg-indigo-50 text-indigo-700{% endif %}">
+                           Tables
+                        </a>
+                        <a href="{% url 'inventory:inventory_list' %}" 
+                           class="nav-link text-gray-900 hover:bg-white/20 hover:text-indigo-600 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 {% if request.resolver_match.namespace == 'inventory' %}active-nav-link bg-indigo-50 text-indigo-700{% endif %}">
+                           Inventory
+                        </a>
+                        <a href="{% url 'dashboard:reports' %}" 
+                           class="nav-link text-gray-900 hover:bg-white/20 hover:text-indigo-600 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 {% if request.resolver_match.url_name == 'reports' %}active-nav-link bg-indigo-50 text-indigo-700{% endif %}">
+                           Reports
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-center">
+                    {% if user.is_authenticated and user.is_staff %}
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-700">Welcome, Admin</span>
+                        <a href="{% url 'admin:index' %}" 
+                           class="btn-hover-effect text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium">
+                            <i class="fas fa-cog"></i>
+                            <span class="ml-1">Admin Panel</span>
+                        </a>
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    class="btn-hover-effect bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span class="ml-1">Logout</span>
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="flex items-center space-x-4">
+                        <a href="{% url 'admin:login' %}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span class="ml-1">Admin Login</span>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile menu -->
+        {% if user.is_authenticated and user.is_staff %}
+        <div class="sm:hidden">
+            <div class="pt-2 pb-3 space-y-1">
+                <a href="{% url 'dashboard:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}bg-indigo-50 border-indigo-500 text-indigo-700{% else %}border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800{% endif %} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                    Dashboard
+                </a>
+                <a href="{% url 'orders:order-list' %}" class="{% if request.resolver_match.namespace == 'orders' %}bg-indigo-50 border-indigo-500 text-indigo-700{% else %}border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800{% endif %} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                    Orders
+                </a>
+                <a href="{% url 'tables:table-list' %}" class="{% if request.resolver_match.namespace == 'tables' %}bg-indigo-50 border-indigo-500 text-indigo-700{% else %}border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800{% endif %} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                    Tables
+                </a>
+                <a href="{% url 'inventory:inventory_list' %}" class="{% if request.resolver_match.namespace == 'inventory' %}bg-indigo-50 border-indigo-500 text-indigo-700{% else %}border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800{% endif %} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                    Inventory
+                </a>
+                <a href="{% url 'dashboard:reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}bg-indigo-50 border-indigo-500 text-indigo-700{% else %}border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800{% endif %} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                    Reports
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="fixed top-4 right-4 z-50" id="messages-container">
+        {% for message in messages %}
+        <div class="{% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %} px-4 py-3 rounded-lg shadow-md mb-2 transition-all duration-500 ease-in-out opacity-100" role="alert">
+            <p class="text-sm">{{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Scripts -->
+    <script>
+        // Handle messages fadeout
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelectorAll('[role="alert"]');
+            messages.forEach(function(message) {
+                setTimeout(function() {
+                    message.style.opacity = '0';
+                    setTimeout(function() {
+                        message.remove();
+                    }, 500);
+                }, 3000);
+            });
+        });
+
+        // Handle logout confirmation
+        const logoutForm = document.querySelector('form[action="{% url "logout" %}"]');
+        if (logoutForm) {
+            logoutForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (confirm('Are you sure you want to logout?')) {
+                    this.submit();
+                }
+            });
+        }
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

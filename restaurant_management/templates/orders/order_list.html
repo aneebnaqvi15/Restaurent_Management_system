@@ -1,0 +1,527 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+<style>
+    .orders-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border: 1px solid rgba(228, 228, 228, 0.1);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 1.5rem;
+    }
+
+    .icon-orders {
+        background: rgba(68, 97, 242, 0.1);
+        color: #4461F2;
+    }
+
+    .icon-progress {
+        background: rgba(151, 71, 255, 0.1);
+        color: #9747FF;
+    }
+
+    .icon-completed {
+        background: rgba(68, 242, 190, 0.1);
+        color: #44F2BE;
+    }
+
+    .icon-cancelled {
+        background: rgba(242, 68, 68, 0.1);
+        color: #F24444;
+    }
+
+    .stat-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #666;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1a1a1a;
+    }
+
+    /* Revenue Stats */
+    .revenue-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .revenue-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border: 1px solid rgba(228, 228, 228, 0.1);
+    }
+
+    .icon-revenue {
+        background: rgba(39, 174, 96, 0.1);
+        color: #27AE60;
+    }
+
+    .icon-average {
+        background: rgba(41, 128, 185, 0.1);
+        color: #2980B9;
+    }
+
+    /* Filter Section */
+    .filter-section {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border: 1px solid rgba(228, 228, 228, 0.1);
+    }
+
+    .filter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1a1a1a;
+    }
+
+    .new-order-btn {
+        background: #4461F2;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: background-color 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .new-order-btn:hover {
+        background: #3451D2;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .filter-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #666;
+    }
+
+    .filter-select {
+        padding: 0.5rem;
+        border: 1px solid #e4e4e4;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        color: #1a1a1a;
+        background: white;
+        width: 100%;
+    }
+
+    .filter-button {
+        background: #4461F2;
+        color: white;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        height: 38px;
+    }
+
+    .filter-button:hover {
+        background: #3451D2;
+    }
+
+    /* Orders Grid */
+    .orders-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .order-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border: 1px solid rgba(228, 228, 228, 0.1);
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .order-number {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1a1a1a;
+    }
+
+    .order-status {
+        padding: 0.375rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .status-preparing {
+        background: #FFF3E0;
+        color: #E65100;
+    }
+
+    .status-in-progress {
+        background: #E8F5E9;
+        color: #2E7D32;
+    }
+
+    .status-completed {
+        background: #E3F2FD;
+        color: #1565C0;
+    }
+
+    .status-cancelled {
+        background: #FFEBEE;
+        color: #C62828;
+    }
+
+    .order-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem;
+        color: #666;
+    }
+
+    .info-label {
+        font-weight: 500;
+    }
+
+    .order-items {
+        border-top: 1px solid #f0f0f0;
+        padding-top: 1rem;
+        margin-top: 1rem;
+    }
+
+    .item-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem;
+        color: #1a1a1a;
+    }
+
+    .item-name {
+        font-weight: 500;
+    }
+
+    .item-quantity {
+        color: #666;
+    }
+
+    .order-total {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #f0f0f0;
+        font-weight: 600;
+        color: #1a1a1a;
+    }
+
+    .order-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .action-btn {
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        color: #4461F2;
+        transition: background-color 0.2s;
+    }
+
+    .action-btn:hover {
+        background: rgba(68, 97, 242, 0.1);
+    }
+
+    .delete-btn {
+        color: #F24444;
+    }
+
+    .delete-btn:hover {
+        background: rgba(242, 68, 68, 0.1);
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    .page-link {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        background: white;
+        color: #4461F2;
+        text-decoration: none;
+        transition: background-color 0.2s;
+    }
+
+    .page-link:hover {
+        background: rgba(68, 97, 242, 0.1);
+    }
+
+    .page-info {
+        text-align: center;
+        color: #666;
+        font-size: 0.875rem;
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="orders-container">
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon icon-orders">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Total Orders</div>
+                <div class="stat-value">{{ stats.count }}</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon icon-progress">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">In Progress</div>
+                <div class="stat-value">{{ stats.in_progress_count }}</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon icon-completed">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Completed Today</div>
+                <div class="stat-value">{{ stats.completed_today }}</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon icon-cancelled">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Cancelled</div>
+                <div class="stat-value">{{ stats.cancelled_count }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Stats -->
+    <div class="revenue-grid">
+        <div class="revenue-card">
+            <div class="stat-icon icon-revenue">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Today's Revenue</div>
+                <div class="stat-value">${{ stats.total_revenue_today|floatformat:2 }}</div>
+            </div>
+        </div>
+
+        <div class="revenue-card">
+            <div class="stat-icon icon-average">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Average Order Value</div>
+                <div class="stat-value">${{ stats.avg_order_value|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="filter-header">
+            <h2 class="filter-title">Orders</h2>
+            <a href="{% url 'orders:order-create' %}" class="new-order-btn">
+                <i class="fas fa-plus"></i>
+                <span>New Order</span>
+            </a>
+        </div>
+        <form method="get" class="filter-grid">
+            <div class="filter-group">
+                <label class="filter-label" for="status">Status</label>
+                <select name="status" id="status" class="filter-select">
+                    <option value="">All Orders</option>
+                    {% for status, label in status_choices %}
+                    <option value="{{ status }}" {% if request.GET.status == status %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="date">Date</label>
+                <input type="date" name="date" id="date" value="{{ request.GET.date }}" class="filter-select">
+            </div>
+            <div class="filter-group">
+                <button type="submit" class="filter-button">Apply Filters</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Orders Grid -->
+    <div class="orders-grid">
+        {% for order in order_list %}
+        <div class="order-card">
+            <div class="order-header">
+                <a href="{% url 'orders:order-detail' order.pk %}" class="order-number">Order #{{ order.order_number }}</a>
+                <span class="order-status {% if order.status == 'preparing' %}status-preparing
+                                      {% elif order.status == 'in_progress' %}status-in-progress
+                                      {% elif order.status == 'completed' %}status-completed
+                                      {% else %}status-cancelled{% endif %}">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
+            <div class="order-info">
+                <div class="info-row">
+                    <span class="info-label">Table</span>
+                    <span>{{ order.table.number }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Date</span>
+                    <span>{{ order.created_at|date:"M d, Y" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Time</span>
+                    <span>{{ order.created_at|time:"H:i" }}</span>
+                </div>
+            </div>
+            <div class="order-items">
+                <div class="item-list">
+                    {% for item in order.items.all %}
+                    <div class="order-item">
+                        <span class="item-name">{{ item.menu_item.name }}</span>
+                        <span class="item-quantity">x{{ item.quantity }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="order-total">
+                    <span>Total</span>
+                    <span>${{ order.total_amount|floatformat:2 }}</span>
+                </div>
+            </div>
+            <div class="order-actions">
+                <a href="{% url 'orders:order-update' order.pk %}" class="action-btn" title="Edit Order">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <a href="#" class="action-btn delete-btn" title="Delete Order">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center text-gray-500">No orders found</p>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}" class="page-link">Previous</a>
+        {% endif %}
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}" class="page-link">Next</a>
+        {% endif %}
+    </div>
+    <div class="page-info">
+        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ paginator.count }} orders
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

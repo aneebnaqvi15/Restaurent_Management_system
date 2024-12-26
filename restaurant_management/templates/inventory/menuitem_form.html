@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 max-w-2xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-gray-800">
+                {% if form.instance.pk %}Edit{% else %}Add New{% endif %} Menu Item
+            </h2>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Name -->
+            <div>
+                <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700">Name</label>
+                <div class="mt-1">
+                    <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}" 
+                           class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                           value="{{ form.name.value|default:'' }}" required>
+                </div>
+                {% if form.name.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Category -->
+            <div>
+                <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-gray-700">Category</label>
+                <div class="mt-1 flex space-x-3">
+                    <select name="{{ form.category.name }}" id="{{ form.category.id_for_label }}"
+                            class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                        <option value="">Select a category</option>
+                        {% for value, label in form.category.field.choices %}
+                            <option value="{{ value }}" {% if form.category.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" onclick="showNewCategoryModal()"
+                            class="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <i class="fas fa-plus mr-2"></i>
+                        New
+                    </button>
+                </div>
+                {% if form.category.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.category.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700">Description</label>
+                <div class="mt-1">
+                    <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}" rows="3"
+                              class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">{{ form.description.value|default:'' }}</textarea>
+                </div>
+                {% if form.description.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Price -->
+            <div>
+                <label for="{{ form.price.id_for_label }}" class="block text-sm font-medium text-gray-700">Price</label>
+                <div class="mt-1 relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="text-gray-500 sm:text-sm">$</span>
+                    </div>
+                    <input type="number" name="{{ form.price.name }}" id="{{ form.price.id_for_label }}" step="0.01"
+                           class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 sm:text-sm border-gray-300 rounded-md"
+                           value="{{ form.price.value|default:'' }}" required>
+                </div>
+                {% if form.price.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.price.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Stock Quantity -->
+            <div>
+                <label for="{{ form.stock_quantity.id_for_label }}" class="block text-sm font-medium text-gray-700">Stock Quantity</label>
+                <div class="mt-1">
+                    <input type="number" name="{{ form.stock_quantity.name }}" id="{{ form.stock_quantity.id_for_label }}"
+                           class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                           value="{{ form.stock_quantity.value|default:'' }}" required>
+                </div>
+                {% if form.stock_quantity.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.stock_quantity.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Image -->
+            <div>
+                <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700">Image</label>
+                <div class="mt-1 flex items-center space-x-4">
+                    {% if form.instance.image %}
+                        <img src="{{ form.instance.image.url }}" alt="{{ form.instance.name }}" class="h-12 w-12 object-cover rounded-md">
+                    {% endif %}
+                    <input type="file" name="{{ form.image.name }}" id="{{ form.image.id_for_label }}"
+                           class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300"
+                           accept="image/*">
+                </div>
+                {% if form.image.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.image.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Availability -->
+            <div class="flex items-start">
+                <div class="flex items-center h-5">
+                    <input type="checkbox" name="{{ form.is_available.name }}" id="{{ form.is_available.id_for_label }}"
+                           class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                           {% if form.is_available.value %}checked{% endif %}>
+                </div>
+                <div class="ml-3 text-sm">
+                    <label for="{{ form.is_available.id_for_label }}" class="font-medium text-gray-700">Available</label>
+                    <p class="text-gray-500">Check if this item is currently available for order</p>
+                </div>
+            </div>
+
+            <!-- New Category Modal -->
+            <div id="newCategoryModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden" aria-hidden="true">
+                <div class="flex items-center justify-center min-h-screen">
+                    <div class="bg-white rounded-lg px-4 pt-5 pb-4 overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full sm:p-6">
+                        <div>
+                            <div class="mt-3 text-center sm:mt-5">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Add New Category</h3>
+                                <div class="mt-2">
+                                    <input type="text" id="newCategoryName" 
+                                           class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                           placeholder="Category name">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                            <button type="button" onclick="createNewCategory()"
+                                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm">
+                                Create
+                            </button>
+                            <button type="button" onclick="hideNewCategoryModal()"
+                                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-3 pt-4">
+                <a href="{% url 'inventory:inventory_list' %}" 
+                   class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    Cancel
+                </a>
+                <button type="submit"
+                        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    {% if form.instance.pk %}Update{% else %}Create{% endif %} Item
+                </button>
+            </div>
+            <script>
+                function showNewCategoryModal() {
+                    document.getElementById('newCategoryModal').classList.remove('hidden');
+                }
+
+                function hideNewCategoryModal() {
+                    document.getElementById('newCategoryModal').classList.add('hidden');
+                    document.getElementById('newCategoryName').value = '';
+                }
+
+                function createNewCategory() {
+                    const categoryName = document.getElementById('newCategoryName').value;
+                    if (!categoryName) {
+                        alert('Please enter a category name');
+                        return;
+                    }
+
+                    // Send POST request to create category
+                    fetch('{% url "inventory:create_category" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify({ name: categoryName })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Add new option to select
+                            const select = document.getElementById('{{ form.category.id_for_label }}');
+                            const option = new Option(data.category.name, data.category.id, true, true);
+                            select.add(option);
+                            hideNewCategoryModal();
+                        } else {
+                            alert(data.error || 'Failed to create category');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Failed to create category');
+                    });
+                }
+            </script>
+        </form>
+    </div>
+</div>
+{% endblock %}

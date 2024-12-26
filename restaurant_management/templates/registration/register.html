@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+    .login-bg {
+        background-image: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80');
+        background-size: cover;
+        background-position: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex">
+    <!-- Left side - Registration Form -->
+    <div class="flex-1 flex items-center justify-center">
+        <div class="max-w-md w-full px-6">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">Restaurant Management System</h1>
+                <p class="mt-2 text-sm text-gray-600">Create New Account</p>
+            </div>
+            
+            <div class="bg-white py-8 px-6 shadow-xl rounded-lg">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Register</h2>
+                    <p class="mt-2 text-sm text-gray-600">Create your account to access the admin dashboard</p>
+                </div>
+
+                {% if form.errors %}
+                <div class="mb-4 p-4 rounded-md bg-red-50 border border-red-200">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-circle text-red-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">There were errors with your submission</h3>
+                            <div class="text-sm text-red-700 mt-2">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    <div>
+                        <label for="id_username" class="block text-sm font-medium text-gray-700">Username</label>
+                        <div class="mt-1">
+                            <input type="text" name="username" id="id_username" required 
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        {% if form.username.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.username.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="id_password1" class="block text-sm font-medium text-gray-700">Password</label>
+                        <div class="mt-1">
+                            <input type="password" name="password1" id="id_password1" required 
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        {% if form.password1.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.password1.errors.0 }}</p>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">{{ form.password1.help_text }}</p>
+                    </div>
+
+                    <div>
+                        <label for="id_password2" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                        <div class="mt-1">
+                            <input type="password" name="password2" id="id_password2" required 
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        {% if form.password2.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.password2.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150">
+                            <i class="fas fa-user-plus mr-2"></i>
+                            Create Account
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-6">
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-gray-500">Already have an account?</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <a href="{% url 'login' %}" class="w-full flex justify-center items-center px-4 py-2 border border-indigo-300 shadow-sm text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150">
+                            <i class="fas fa-sign-in-alt mr-2"></i>
+                            Sign In
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right side - Image -->
+    <div class="hidden lg:block relative flex-1">
+        <div class="absolute inset-0 login-bg">
+            <div class="absolute inset-0 bg-gradient-to-l from-black/50 to-black/20"></div>
+        </div>
+        <div class="absolute inset-0 flex items-center justify-center text-white p-12">
+            <div class="max-w-xl">
+                <h2 class="text-4xl font-bold mb-4">Join RMS Admin</h2>
+                <p class="text-lg opacity-90">
+                    Create your account to start managing your restaurant operations with our comprehensive management system.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
