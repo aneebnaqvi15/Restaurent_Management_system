@@ -1,3 +1,7 @@
+
+
+https://github.com/user-attachments/assets/3edad0d0-d4fb-4e96-9d16-23cdeac1deed
+
  Restaurant Management System (RMS)
 
 A modern, feature-rich restaurant management system built with Python and a beautiful interactive dashboard.
